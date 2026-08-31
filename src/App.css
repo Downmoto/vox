@@ -42,7 +42,8 @@ label {
 }
 
 select,
-button {
+button,
+textarea {
   padding: 0.65rem 0.8rem;
   border: 1px solid #aaa;
   border-radius: 0.35rem;
@@ -82,7 +83,15 @@ section {
 }
 
 .history h2 {
+  margin: 0;
   font-size: 1rem;
+}
+
+.history-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
 .message {
@@ -107,4 +116,34 @@ section {
 .reasoning {
   color: #666;
   font-style: italic;
+}
+
+.stream {
+  margin-top: 0.5rem;
+  white-space: pre-wrap;
+}
+
+.approval {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid #c08b2f;
+  border-radius: 0.35rem;
+}
+
+.approval p {
+  margin: 0.5rem 0;
+}
+
+.composer {
+  margin-top: 1.5rem;
+}
+
+.composer textarea {
+  box-sizing: border-box;
+  width: 100%;
+  resize: vertical;
+}
+
+.composer button {
+  margin-top: 0.5rem;
 }
