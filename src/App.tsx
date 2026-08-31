@@ -1,49 +1,93 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/core";
+import { useEffect, useState } from "react";
 import "./App.css";
 
-function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+type Workspace = {
+  name: string;
+  path: string;
+};
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
+function isWorkspace(value: unknown): value is Workspace {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "name" in value &&
+    typeof value.name === "string" &&
+    "path" in value &&
+    typeof value.path === "string"
+  );
+}
+
+function App() {
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [selected, setSelected] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  async function loadWorkspaces() {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/workspaces");
+      if (!response.ok) {
+        throw new Error(`Ethos returned ${response.status}`);
+      }
+
+      const data: unknown = await response.json();
+      if (!Array.isArray(data) || !data.every(isWorkspace)) {
+        throw new Error("Ethos returned invalid workspace data");
+      }
+
+      const nextWorkspaces = data;
+      setWorkspaces(nextWorkspaces);
+      setSelected((current) =>
+        nextWorkspaces.some(({ name }) => name === current)
+          ? current
+          : (nextWorkspaces[0]?.name ?? ""),
+      );
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Could not reach Ethos");
+    } finally {
+      setLoading(false);
+    }
   }
 
+  useEffect(() => {
+    void loadWorkspaces();
+  }, []);
+
   return (
-    <main className="container">
-      <h1>Welcome to Tauri + React</h1>
+    <main>
+      <h1>Vox</h1>
+      <p className={error ? "status error" : "status"} role="status">
+        {loading ? "Connecting to Ethos…" : error || "Connected to Ethos"}
+      </p>
 
-      <div className="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <label htmlFor="workspace">Workspace</label>
+      <div className="controls">
+        <select
+          id="workspace"
+          value={selected}
+          onChange={(event) => setSelected(event.currentTarget.value)}
+          disabled={loading || workspaces.length === 0}
+        >
+          {workspaces.length === 0 && <option value="">No workspaces</option>}
+          {workspaces.map((workspace) => (
+            <option key={workspace.name} value={workspace.name}>
+              {workspace.name}
+            </option>
+          ))}
+        </select>
+        <button type="button" onClick={loadWorkspaces} disabled={loading}>
+          Reload
+        </button>
       </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
 
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
+      {selected && (
+        <p className="path">
+          {workspaces.find(({ name }) => name === selected)?.path}
+        </p>
+      )}
     </main>
   );
 }
