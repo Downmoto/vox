@@ -1,0 +1,56 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import * as sessions from "./sessions.ts";
+
+const session = {
+  id: "session/id",
+  workspace: "my workspace",
+  created_at: "2026-09-01T12:00:00Z",
+  archived_at: null,
+  archived: false,
+  message_count: 0,
+  assigned_persona: "ethos",
+  effective_persona: "ethos",
+  persona_fallback: false,
+};
+
+test("session lifecycle commands mirror the Ethos REST API", async (context) => {
+  const originalFetch = globalThis.fetch;
+  const requests = [];
+  globalThis.fetch = async (input, init) => {
+    requests.push(new Request(input, init));
+    return Response.json(session);
+  };
+  context.after(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  const connection = { endpoint: "http://localhost:8000" };
+
+  await sessions.create(connection, "my workspace");
+  await sessions.list(connection, "my workspace");
+  await sessions.show(connection, "my workspace", "session/id");
+  await sessions.archive(connection, "my workspace", "session/id");
+  await sessions.recover(connection, "my workspace", "session/id");
+
+  assert.deepEqual(
+    requests.map(({ method, url }) => [method, url]),
+    [
+      ["POST", "http://localhost:8000/workspaces/my%20workspace/sessions"],
+      ["GET", "http://localhost:8000/workspaces/my%20workspace/sessions"],
+      [
+        "GET",
+        "http://localhost:8000/workspaces/my%20workspace/sessions/session%2Fid",
+      ],
+      [
+        "POST",
+        "http://localhost:8000/workspaces/my%20workspace/sessions/session%2Fid/archive",
+      ],
+      [
+        "POST",
+        "http://localhost:8000/workspaces/my%20workspace/sessions/session%2Fid/recover",
+      ],
+    ],
+  );
+});
