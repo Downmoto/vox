@@ -12,6 +12,41 @@ export type Session = {
   persona_fallback: boolean;
 };
 
+export type TextPart = {
+  kind: "text";
+  text: string;
+};
+
+export type ReasoningPart = {
+  kind: "reasoning";
+  text: string;
+};
+
+export type ToolCallPart = {
+  kind: "tool_call";
+  call_id: string;
+  name: string;
+  arguments_json: string;
+};
+
+export type ToolResultPart = {
+  kind: "tool_result";
+  call_id: string;
+  name: string;
+  content: string;
+  is_error: boolean;
+};
+
+type NonEmpty<Part> = [Part, ...Part[]];
+
+export type Message =
+  | { role: "system" | "user"; parts: NonEmpty<TextPart> }
+  | {
+      role: "assistant";
+      parts: NonEmpty<TextPart | ReasoningPart | ToolCallPart>;
+    }
+  | { role: "tool"; parts: [ToolResultPart] };
+
 function sessionPath(workspace: string, sessionId?: string) {
   const sessions = `/workspaces/${encodeURIComponent(workspace)}/sessions`;
   return sessionId === undefined
@@ -39,6 +74,18 @@ export function show(
   return request<Session>(connection, sessionPath(workspace, sessionId), {
     method: "GET",
   });
+}
+
+export function history(
+  connection: Connection,
+  workspace: string,
+  sessionId: string,
+) {
+  return request<Message[]>(
+    connection,
+    `${sessionPath(workspace, sessionId)}/history`,
+    { method: "GET" },
+  );
 }
 
 export function archive(

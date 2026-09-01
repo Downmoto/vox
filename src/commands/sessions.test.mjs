@@ -54,3 +54,38 @@ test("session lifecycle commands mirror the Ethos REST API", async (context) => 
     ],
   );
 });
+
+test("session history mirrors the Ethos REST API", async (context) => {
+  const originalFetch = globalThis.fetch;
+  const messages = [
+    { role: "user", parts: [{ kind: "text", text: "Hello" }] },
+    {
+      role: "assistant",
+      parts: [
+        { kind: "reasoning", text: "Think" },
+        { kind: "text", text: "Hi" },
+      ],
+    },
+  ];
+  let request;
+  globalThis.fetch = async (input, init) => {
+    request = new Request(input, init);
+    return Response.json(messages);
+  };
+  context.after(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  const history = await sessions.history(
+    { endpoint: "http://localhost:8000" },
+    "my workspace",
+    "session/id",
+  );
+
+  assert.equal(request.method, "GET");
+  assert.equal(
+    request.url,
+    "http://localhost:8000/workspaces/my%20workspace/sessions/session%2Fid/history",
+  );
+  assert.deepEqual(history, messages);
+});
