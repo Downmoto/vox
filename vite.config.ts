@@ -17,12 +17,6 @@ export default defineConfig(() => ({
     port: 1420,
     strictPort: true,
     host: host || false,
-    proxy: {
-      "/api": {
-        target: "http://127.0.0.1:8000",
-        rewrite: (path) => path.replace(/^\/api/, ""),
-      },
-    },
     hmr: host
       ? {
           protocol: "ws",

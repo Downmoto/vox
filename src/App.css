@@ -43,6 +43,7 @@ label {
 
 select,
 button,
+input,
 textarea {
   padding: 0.65rem 0.8rem;
   border: 1px solid #aaa;
@@ -62,7 +63,9 @@ button {
 }
 
 button:disabled,
-select:disabled {
+select:disabled,
+input:disabled,
+textarea:disabled {
   cursor: default;
   opacity: 0.6;
 }
@@ -146,4 +149,37 @@ section {
 
 .composer button {
   margin-top: 0.5rem;
+}
+
+.connection,
+.api-console form {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.connection h2,
+.api-console h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.connection input,
+.api-console input,
+.api-console select,
+.api-console textarea {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.api-console button {
+  justify-self: start;
+}
+
+.api-result {
+  padding: 0.75rem;
+  overflow: auto;
+  border: 1px solid #ddd;
+  border-radius: 0.35rem;
+  background: white;
+  white-space: pre-wrap;
 }
