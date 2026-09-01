@@ -55,3 +55,52 @@ test("global capability commands mirror the Ethos REST API", async (context) => 
     settings: { max_skills: 100 },
   });
 });
+
+test("workspace capability commands mirror the Ethos REST API", async (context) => {
+  const originalFetch = globalThis.fetch;
+  const requests = [];
+  globalThis.fetch = async (input, init) => {
+    requests.push(new Request(input, init));
+    return Response.json({
+      ...skills,
+      scope: "workspace",
+      workspace: "my workspace",
+      configured: { max_skills: 100 },
+    });
+  };
+  context.after(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  const connection = { endpoint: "http://localhost:8000" };
+
+  await capabilities.listWorkspace(connection, "my workspace");
+  await capabilities.showWorkspace(connection, "my workspace", "skills");
+  await capabilities.configureWorkspace(connection, "my workspace", {
+    capability: "skills",
+    settings: { max_skills: 100 },
+  });
+  await capabilities.resetWorkspace(connection, "my workspace", "skills");
+
+  assert.deepEqual(
+    requests.map(({ method, url }) => [method, url]),
+    [
+      ["GET", "http://localhost:8000/workspaces/my%20workspace/capabilities"],
+      [
+        "GET",
+        "http://localhost:8000/workspaces/my%20workspace/capabilities/skills",
+      ],
+      [
+        "PUT",
+        "http://localhost:8000/workspaces/my%20workspace/capabilities/skills",
+      ],
+      [
+        "DELETE",
+        "http://localhost:8000/workspaces/my%20workspace/capabilities/skills",
+      ],
+    ],
+  );
+  assert.deepEqual(await requests[2].json(), {
+    settings: { max_skills: 100 },
+  });
+});
