@@ -1,6 +1,6 @@
+import type { ReasoningEffort } from "./provider.ts";
 import { type Connection, request } from "./request.ts";
 
-export type ReasoningEffort = "none" | "low" | "medium" | "high";
 export type Capability = "skills" | "file_system" | "shell";
 
 export type Persona = {
