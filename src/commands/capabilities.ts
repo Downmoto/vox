@@ -1,3 +1,5 @@
+/** Global and workspace capability REST commands and wire types. */
+
 import { type Connection, request } from "./request.ts";
 
 export type CapabilityName = "skills" | "file_system" | "shell";
@@ -44,6 +46,7 @@ export type Capability =
   | GlobalCapability<"file_system", FileSystemSettings>
   | GlobalCapability<"shell", ShellSettings>;
 
+/** Workspace writes may use null to remove one configured override. */
 type WorkspaceSettings<Settings extends object> = {
   [Field in keyof Settings]?: Settings[Field] | null;
 };

@@ -1,3 +1,5 @@
+/** Workspace REST commands and their Ethos wire types. */
+
 import { type Connection, request } from "./request.ts";
 
 export type Workspace = {

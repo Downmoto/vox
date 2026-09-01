@@ -1,3 +1,5 @@
+/** Persona and workspace-assignment REST commands and wire types. */
+
 import type { CapabilityName } from "./capabilities.ts";
 import type { ReasoningEffort } from "./provider.ts";
 import { type Connection, request } from "./request.ts";
@@ -23,6 +25,7 @@ export type PersonaAssignment = {
   fallback: boolean;
 };
 
+/** Sparse settings accepted when an existing persona is configured. */
 export type PersonaSettings = {
   name?: string;
   instructions?: string;

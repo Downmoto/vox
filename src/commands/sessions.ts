@@ -1,3 +1,5 @@
+/** Session lifecycle and history REST commands and wire types. */
+
 import { type Connection, request } from "./request.ts";
 
 export type Session = {
@@ -39,6 +41,10 @@ export type ToolResultPart = {
 
 type NonEmpty<Part> = [Part, ...Part[]];
 
+/**
+ * Canonical history messages preserve Ethos's permitted role/part pairings.
+ * Tool messages contain exactly one result; every other message is non-empty.
+ */
 export type Message =
   | { role: "system" | "user"; parts: NonEmpty<TextPart> }
   | {

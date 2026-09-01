@@ -1,3 +1,6 @@
+/** Shared JSON transport for every non-streaming Ethos command. */
+
+/** Connection details supplied to commands instead of retained globally. */
 export type Connection = {
   endpoint: string;
   bearerToken?: string;
@@ -48,5 +51,6 @@ export async function request<T>(
     throw new Error(`Ethos returned ${response.status}${detail}`);
   }
 
+  // Resource modules own the wire types; this boundary trusts Ethos to honour them.
   return response.json() as Promise<T>;
 }
