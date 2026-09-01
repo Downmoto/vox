@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import * as personas from "./personas.ts";
+import { createCommands } from "./index.ts";
 
 const persona = {
   id: "writer",
@@ -30,28 +30,20 @@ test("persona commands mirror the Ethos REST API", async (context) => {
   });
 
   const connection = { endpoint: "http://localhost:8000" };
+  const personas = createCommands(connection).personas;
 
-  await personas.showDefault(connection);
-  await personas.configureDefault(connection, { persona: "writer" });
-  await personas.create(connection, {
+  await personas.showDefault();
+  await personas.configureDefault("writer");
+  await personas.create({
     id: "writer",
     settings: { name: "Writer", instructions: "Write clearly." },
   });
-  await personas.list(connection, { workspace: "my workspace" });
-  await personas.show(connection, {
-    persona: "review writer",
-    workspace: "my workspace",
-  });
-  await personas.configure(connection, {
-    persona: "writer",
-    settings: { enabled: false },
-  });
-  const removed = await personas.remove(connection, { persona: "old writer" });
-  await personas.showWorkspace(connection, { workspace: "my workspace" });
-  await personas.assignWorkspace(connection, {
-    workspace: "my workspace",
-    persona: "writer",
-  });
+  await personas.list("my workspace");
+  await personas.show("review writer", "my workspace");
+  await personas.configure("writer", { enabled: false });
+  const removed = await personas.remove("old writer");
+  await personas.showWorkspace("my workspace");
+  await personas.assignWorkspace("my workspace", "writer");
 
   assert.deepEqual(
     requests.map(({ method, url }) => [method, url]),

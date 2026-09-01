@@ -1,6 +1,6 @@
 /** Shared HTTP transport for Ethos commands. */
 
-/** Connection details supplied to commands instead of retained globally. */
+/** Connection details bound to a command client instead of retained globally. */
 export type Connection = {
   endpoint: string;
   bearerToken?: string;

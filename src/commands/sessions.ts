@@ -60,60 +60,43 @@ function sessionPath(workspace: string, sessionId?: string) {
     : `${sessions}/${encodeURIComponent(sessionId)}`;
 }
 
-export function create(connection: Connection, workspace: string) {
-  return request<Session>(connection, sessionPath(workspace), {
-    method: "POST",
-  });
-}
-
-export function list(connection: Connection, workspace: string) {
-  return request<Session[]>(connection, sessionPath(workspace), {
-    method: "GET",
-  });
-}
-
-export function show(
-  connection: Connection,
-  workspace: string,
-  sessionId: string,
-) {
-  return request<Session>(connection, sessionPath(workspace, sessionId), {
-    method: "GET",
-  });
-}
-
-export function history(
-  connection: Connection,
-  workspace: string,
-  sessionId: string,
-) {
-  return request<Message[]>(
-    connection,
-    `${sessionPath(workspace, sessionId)}/history`,
-    { method: "GET" },
-  );
-}
-
-export function archive(
-  connection: Connection,
-  workspace: string,
-  sessionId: string,
-) {
-  return request<Session>(
-    connection,
-    `${sessionPath(workspace, sessionId)}/archive`,
-    { method: "POST" },
-  );
-}
-
-export function recover(
-  connection: Connection,
-  workspace: string,
-  sessionId: string,
-) {
-  return request<Session>(
-    connection,
-    `${sessionPath(workspace, sessionId)}/recover`,
-    { method: "POST" },
-  );
+export function sessionCommands(connection: Connection) {
+  return {
+    create(workspace: string) {
+      return request<Session>(connection, sessionPath(workspace), {
+        method: "POST",
+      });
+    },
+    list(workspace: string) {
+      return request<Session[]>(connection, sessionPath(workspace), {
+        method: "GET",
+      });
+    },
+    show(workspace: string, sessionId: string) {
+      return request<Session>(connection, sessionPath(workspace, sessionId), {
+        method: "GET",
+      });
+    },
+    history(workspace: string, sessionId: string) {
+      return request<Message[]>(
+        connection,
+        `${sessionPath(workspace, sessionId)}/history`,
+        { method: "GET" },
+      );
+    },
+    archive(workspace: string, sessionId: string) {
+      return request<Session>(
+        connection,
+        `${sessionPath(workspace, sessionId)}/archive`,
+        { method: "POST" },
+      );
+    },
+    recover(workspace: string, sessionId: string) {
+      return request<Session>(
+        connection,
+        `${sessionPath(workspace, sessionId)}/recover`,
+        { method: "POST" },
+      );
+    },
+  };
 }

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import * as capabilities from "./capabilities.ts";
+import { createCommands } from "./index.ts";
 
 const skills = {
   name: "skills",
@@ -35,10 +35,11 @@ test("global capability commands mirror the Ethos REST API", async (context) => 
   });
 
   const connection = { endpoint: "http://localhost:8000" };
+  const capabilities = createCommands(connection).capabilities;
 
-  await capabilities.list(connection);
-  await capabilities.show(connection, "skills");
-  await capabilities.configure(connection, {
+  await capabilities.list();
+  await capabilities.show("skills");
+  await capabilities.configure({
     capability: "skills",
     settings: { max_skills: 100 },
   });
@@ -73,14 +74,15 @@ test("workspace capability commands mirror the Ethos REST API", async (context) 
   });
 
   const connection = { endpoint: "http://localhost:8000" };
+  const capabilities = createCommands(connection).capabilities;
 
-  await capabilities.listWorkspace(connection, "my workspace");
-  await capabilities.showWorkspace(connection, "my workspace", "skills");
-  await capabilities.configureWorkspace(connection, "my workspace", {
+  await capabilities.listWorkspace("my workspace");
+  await capabilities.showWorkspace("my workspace", "skills");
+  await capabilities.configureWorkspace("my workspace", {
     capability: "skills",
     settings: { max_skills: 100 },
   });
-  await capabilities.resetWorkspace(connection, "my workspace", "skills");
+  await capabilities.resetWorkspace("my workspace", "skills");
 
   assert.deepEqual(
     requests.map(({ method, url }) => [method, url]),

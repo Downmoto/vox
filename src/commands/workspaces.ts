@@ -15,25 +15,25 @@ export type CreateWorkspace = {
   persona?: string | null;
 };
 
-export type ShowWorkspace = {
-  workspace: string;
-};
-
-export function create(connection: Connection, input: CreateWorkspace) {
-  return request<Workspace>(connection, "/workspaces", {
-    method: "POST",
-    body: input,
-  });
-}
-
-export function list(connection: Connection) {
-  return request<Workspace[]>(connection, "/workspaces", { method: "GET" });
-}
-
-export function show(connection: Connection, input: ShowWorkspace) {
-  return request<Workspace>(
-    connection,
-    `/workspaces/${encodeURIComponent(input.workspace)}`,
-    { method: "GET" },
-  );
+export function workspaceCommands(connection: Connection) {
+  return {
+    create(input: CreateWorkspace) {
+      return request<Workspace>(connection, "/workspaces", {
+        method: "POST",
+        body: input,
+      });
+    },
+    list() {
+      return request<Workspace[]>(connection, "/workspaces", {
+        method: "GET",
+      });
+    },
+    show(workspace: string) {
+      return request<Workspace>(
+        connection,
+        `/workspaces/${encodeURIComponent(workspace)}`,
+        { method: "GET" },
+      );
+    },
+  };
 }

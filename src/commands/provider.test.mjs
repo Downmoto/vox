@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import * as provider from "./provider.ts";
+import { createCommands } from "./index.ts";
 
 const configuredProvider = {
   name: "openai",
@@ -23,10 +23,11 @@ test("provider commands mirror the Ethos REST API", async (context) => {
   });
 
   const connection = { endpoint: "http://localhost:8000" };
+  const provider = createCommands(connection).provider;
 
-  await provider.show(connection);
-  await provider.check(connection, { api_key: "secret" });
-  await provider.configure(connection, {
+  await provider.show();
+  await provider.check({ api_key: "secret" });
+  await provider.configure({
     name: "ollama",
     ollama_base_url: "http://localhost:11434",
   });

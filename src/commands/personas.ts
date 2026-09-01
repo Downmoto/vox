@@ -43,100 +43,71 @@ export type CreatePersona = {
   };
 };
 
-export type ListPersonas = {
-  workspace?: string;
-};
-
-export type ShowPersona = {
-  persona: string;
-  workspace?: string;
-};
-
-export type ConfigurePersona = {
-  persona: string;
-  settings: PersonaSettings;
-};
-
-export type PersonaId = {
-  persona: string;
-};
-
-export type WorkspacePersona = {
-  workspace: string;
-};
-
-export type AssignWorkspacePersona = WorkspacePersona & PersonaId;
-
 function workspaceQuery(workspace: string | undefined) {
   if (workspace === undefined) return "";
   return `?${new URLSearchParams({ workspace })}`;
 }
 
-export function showDefault(connection: Connection) {
-  return request<Persona>(connection, "/personas/default", { method: "GET" });
-}
-
-export function configureDefault(connection: Connection, input: PersonaId) {
-  return request<Persona>(connection, "/personas/default", {
-    method: "PUT",
-    body: input,
-  });
-}
-
-export function create(connection: Connection, input: CreatePersona) {
-  return request<Persona>(connection, "/personas", {
-    method: "POST",
-    body: input,
-  });
-}
-
-export function list(connection: Connection, input: ListPersonas) {
-  return request<Persona[]>(
-    connection,
-    `/personas${workspaceQuery(input.workspace)}`,
-    { method: "GET" },
-  );
-}
-
-export function show(connection: Connection, input: ShowPersona) {
-  return request<Persona>(
-    connection,
-    `/personas/${encodeURIComponent(input.persona)}${workspaceQuery(input.workspace)}`,
-    { method: "GET" },
-  );
-}
-
-export function configure(connection: Connection, input: ConfigurePersona) {
-  return request<Persona>(
-    connection,
-    `/personas/${encodeURIComponent(input.persona)}`,
-    { method: "PUT", body: { settings: input.settings } },
-  );
-}
-
-export function remove(connection: Connection, input: PersonaId) {
-  return request<Persona>(
-    connection,
-    `/personas/${encodeURIComponent(input.persona)}`,
-    { method: "DELETE" },
-  );
-}
-
-export function showWorkspace(connection: Connection, input: WorkspacePersona) {
-  return request<PersonaAssignment>(
-    connection,
-    `/workspaces/${encodeURIComponent(input.workspace)}/persona`,
-    { method: "GET" },
-  );
-}
-
-export function assignWorkspace(
-  connection: Connection,
-  input: AssignWorkspacePersona,
-) {
-  return request<PersonaAssignment>(
-    connection,
-    `/workspaces/${encodeURIComponent(input.workspace)}/persona`,
-    { method: "PUT", body: { persona: input.persona } },
-  );
+export function personaCommands(connection: Connection) {
+  return {
+    showDefault() {
+      return request<Persona>(connection, "/personas/default", {
+        method: "GET",
+      });
+    },
+    configureDefault(persona: string) {
+      return request<Persona>(connection, "/personas/default", {
+        method: "PUT",
+        body: { persona },
+      });
+    },
+    create(input: CreatePersona) {
+      return request<Persona>(connection, "/personas", {
+        method: "POST",
+        body: input,
+      });
+    },
+    list(workspace?: string) {
+      return request<Persona[]>(
+        connection,
+        `/personas${workspaceQuery(workspace)}`,
+        { method: "GET" },
+      );
+    },
+    show(persona: string, workspace?: string) {
+      return request<Persona>(
+        connection,
+        `/personas/${encodeURIComponent(persona)}${workspaceQuery(workspace)}`,
+        { method: "GET" },
+      );
+    },
+    configure(persona: string, settings: PersonaSettings) {
+      return request<Persona>(
+        connection,
+        `/personas/${encodeURIComponent(persona)}`,
+        { method: "PUT", body: { settings } },
+      );
+    },
+    remove(persona: string) {
+      return request<Persona>(
+        connection,
+        `/personas/${encodeURIComponent(persona)}`,
+        { method: "DELETE" },
+      );
+    },
+    showWorkspace(workspace: string) {
+      return request<PersonaAssignment>(
+        connection,
+        `/workspaces/${encodeURIComponent(workspace)}/persona`,
+        { method: "GET" },
+      );
+    },
+    assignWorkspace(workspace: string, persona: string) {
+      return request<PersonaAssignment>(
+        connection,
+        `/workspaces/${encodeURIComponent(workspace)}/persona`,
+        { method: "PUT", body: { persona } },
+      );
+    },
+  };
 }

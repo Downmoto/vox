@@ -23,20 +23,22 @@ export type ProviderSettings = Partial<ProviderConfiguration> & {
   api_key?: string | null;
 };
 
-export function show(connection: Connection) {
-  return request<Provider>(connection, "/provider", { method: "GET" });
-}
-
-export function check(connection: Connection, settings: ProviderSettings) {
-  return request<Provider>(connection, "/provider/check", {
-    method: "POST",
-    body: { settings },
-  });
-}
-
-export function configure(connection: Connection, settings: ProviderSettings) {
-  return request<Provider>(connection, "/provider", {
-    method: "PUT",
-    body: { settings },
-  });
+export function providerCommands(connection: Connection) {
+  return {
+    show() {
+      return request<Provider>(connection, "/provider", { method: "GET" });
+    },
+    check(settings: ProviderSettings) {
+      return request<Provider>(connection, "/provider/check", {
+        method: "POST",
+        body: { settings },
+      });
+    },
+    configure(settings: ProviderSettings) {
+      return request<Provider>(connection, "/provider", {
+        method: "PUT",
+        body: { settings },
+      });
+    },
+  };
 }

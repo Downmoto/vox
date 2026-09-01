@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import * as sessions from "./sessions.ts";
+import { createCommands } from "./index.ts";
 
 const session = {
   id: "session/id",
@@ -27,12 +27,13 @@ test("session lifecycle commands mirror the Ethos REST API", async (context) => 
   });
 
   const connection = { endpoint: "http://localhost:8000" };
+  const sessions = createCommands(connection).sessions;
 
-  await sessions.create(connection, "my workspace");
-  await sessions.list(connection, "my workspace");
-  await sessions.show(connection, "my workspace", "session/id");
-  await sessions.archive(connection, "my workspace", "session/id");
-  await sessions.recover(connection, "my workspace", "session/id");
+  await sessions.create("my workspace");
+  await sessions.list("my workspace");
+  await sessions.show("my workspace", "session/id");
+  await sessions.archive("my workspace", "session/id");
+  await sessions.recover("my workspace", "session/id");
 
   assert.deepEqual(
     requests.map(({ method, url }) => [method, url]),
@@ -76,11 +77,10 @@ test("session history mirrors the Ethos REST API", async (context) => {
     globalThis.fetch = originalFetch;
   });
 
-  const history = await sessions.history(
-    { endpoint: "http://localhost:8000" },
-    "my workspace",
-    "session/id",
-  );
+  const sessions = createCommands({
+    endpoint: "http://localhost:8000",
+  }).sessions;
+  const history = await sessions.history("my workspace", "session/id");
 
   assert.equal(request.method, "GET");
   assert.equal(

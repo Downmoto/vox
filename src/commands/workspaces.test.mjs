@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import * as workspaces from "./workspaces.ts";
+import { createCommands } from "./index.ts";
 
 const workspace = {
   name: "example",
@@ -26,10 +26,11 @@ test("workspace commands mirror the Ethos REST API", async (context) => {
     endpoint: "http://localhost:8000/",
     bearerToken: "secret",
   };
+  const workspaces = createCommands(connection).workspaces;
 
-  await workspaces.list(connection);
-  await workspaces.create(connection, { name: "example", persona: "writer" });
-  await workspaces.show(connection, { workspace: "example space" });
+  await workspaces.list();
+  await workspaces.create({ name: "example", persona: "writer" });
+  await workspaces.show("example space");
 
   assert.equal(requests[0].method, "GET");
   assert.equal(requests[0].url, "http://localhost:8000/workspaces");

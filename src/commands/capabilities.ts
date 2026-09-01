@@ -80,66 +80,57 @@ export type ConfigureWorkspaceCapability =
     }
   | { capability: "shell"; settings: WorkspaceSettings<ShellSettings> };
 
-export function list(connection: Connection) {
-  return request<Capability[]>(connection, "/capabilities", { method: "GET" });
-}
-
-export function show(connection: Connection, input: CapabilityName) {
-  return request<Capability>(
-    connection,
-    `/capabilities/${encodeURIComponent(input)}`,
-    { method: "GET" },
-  );
-}
-
-export function configure(connection: Connection, input: ConfigureCapability) {
-  return request<Capability>(
-    connection,
-    `/capabilities/${encodeURIComponent(input.capability)}`,
-    { method: "PUT", body: { settings: input.settings } },
-  );
-}
-
-export function listWorkspace(connection: Connection, workspace: string) {
-  return request<WorkspaceCapability[]>(
-    connection,
-    `/workspaces/${encodeURIComponent(workspace)}/capabilities`,
-    { method: "GET" },
-  );
-}
-
-export function showWorkspace(
-  connection: Connection,
-  workspace: string,
-  capability: CapabilityName,
-) {
-  return request<WorkspaceCapability>(
-    connection,
-    `/workspaces/${encodeURIComponent(workspace)}/capabilities/${encodeURIComponent(capability)}`,
-    { method: "GET" },
-  );
-}
-
-export function configureWorkspace(
-  connection: Connection,
-  workspace: string,
-  input: ConfigureWorkspaceCapability,
-) {
-  return request<WorkspaceCapability>(
-    connection,
-    `/workspaces/${encodeURIComponent(workspace)}/capabilities/${encodeURIComponent(input.capability)}`,
-    { method: "PUT", body: { settings: input.settings } },
-  );
-}
-
-export function resetWorkspace(
-  connection: Connection,
-  workspace: string,
-  capability: CapabilityName,
-) {
-  return request<WorkspaceCapability>(
-    connection,
-    `/workspaces/${encodeURIComponent(workspace)}/capabilities/${encodeURIComponent(capability)}`,
-    { method: "DELETE" },
-  );
+export function capabilityCommands(connection: Connection) {
+  return {
+    list() {
+      return request<Capability[]>(connection, "/capabilities", {
+        method: "GET",
+      });
+    },
+    show(capability: CapabilityName) {
+      return request<Capability>(
+        connection,
+        `/capabilities/${encodeURIComponent(capability)}`,
+        { method: "GET" },
+      );
+    },
+    configure(input: ConfigureCapability) {
+      return request<Capability>(
+        connection,
+        `/capabilities/${encodeURIComponent(input.capability)}`,
+        { method: "PUT", body: { settings: input.settings } },
+      );
+    },
+    listWorkspace(workspace: string) {
+      return request<WorkspaceCapability[]>(
+        connection,
+        `/workspaces/${encodeURIComponent(workspace)}/capabilities`,
+        { method: "GET" },
+      );
+    },
+    showWorkspace(workspace: string, capability: CapabilityName) {
+      return request<WorkspaceCapability>(
+        connection,
+        `/workspaces/${encodeURIComponent(workspace)}/capabilities/${encodeURIComponent(capability)}`,
+        { method: "GET" },
+      );
+    },
+    configureWorkspace(
+      workspace: string,
+      input: ConfigureWorkspaceCapability,
+    ) {
+      return request<WorkspaceCapability>(
+        connection,
+        `/workspaces/${encodeURIComponent(workspace)}/capabilities/${encodeURIComponent(input.capability)}`,
+        { method: "PUT", body: { settings: input.settings } },
+      );
+    },
+    resetWorkspace(workspace: string, capability: CapabilityName) {
+      return request<WorkspaceCapability>(
+        connection,
+        `/workspaces/${encodeURIComponent(workspace)}/capabilities/${encodeURIComponent(capability)}`,
+        { method: "DELETE" },
+      );
+    },
+  };
 }

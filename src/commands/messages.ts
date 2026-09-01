@@ -51,59 +51,33 @@ export type ToolOutput = EventContext & {
 
 export type MessageEvent = MessageChunk | Approval | ToolOutput;
 
-export function send(
-  connection: Connection,
-  workspace: string,
-  sessionId: string,
-  prompt: string,
-) {
-  return stream<MessageEvent>(
-    connection,
-    `/workspaces/${encodeURIComponent(workspace)}/sessions/${encodeURIComponent(sessionId)}/messages`,
-    { method: "POST", body: { prompt } },
-  );
-}
+export function messageCommands(connection: Connection) {
+  function resolveApproval(
+    workspace: string,
+    sessionId: string,
+    approvalId: string,
+    decision: "approve" | "deny",
+  ) {
+    return stream<MessageEvent>(
+      connection,
+      `/workspaces/${encodeURIComponent(workspace)}/sessions/${encodeURIComponent(sessionId)}/approvals/${encodeURIComponent(approvalId)}/${decision}`,
+      { method: "POST" },
+    );
+  }
 
-function resolveApproval(
-  connection: Connection,
-  workspace: string,
-  sessionId: string,
-  approvalId: string,
-  decision: "approve" | "deny",
-) {
-  return stream<MessageEvent>(
-    connection,
-    `/workspaces/${encodeURIComponent(workspace)}/sessions/${encodeURIComponent(sessionId)}/approvals/${encodeURIComponent(approvalId)}/${decision}`,
-    { method: "POST" },
-  );
-}
-
-export function approve(
-  connection: Connection,
-  workspace: string,
-  sessionId: string,
-  approvalId: string,
-) {
-  return resolveApproval(
-    connection,
-    workspace,
-    sessionId,
-    approvalId,
-    "approve",
-  );
-}
-
-export function deny(
-  connection: Connection,
-  workspace: string,
-  sessionId: string,
-  approvalId: string,
-) {
-  return resolveApproval(
-    connection,
-    workspace,
-    sessionId,
-    approvalId,
-    "deny",
-  );
+  return {
+    send(workspace: string, sessionId: string, prompt: string) {
+      return stream<MessageEvent>(
+        connection,
+        `/workspaces/${encodeURIComponent(workspace)}/sessions/${encodeURIComponent(sessionId)}/messages`,
+        { method: "POST", body: { prompt } },
+      );
+    },
+    approve(workspace: string, sessionId: string, approvalId: string) {
+      return resolveApproval(workspace, sessionId, approvalId, "approve");
+    },
+    deny(workspace: string, sessionId: string, approvalId: string) {
+      return resolveApproval(workspace, sessionId, approvalId, "deny");
+    },
+  };
 }

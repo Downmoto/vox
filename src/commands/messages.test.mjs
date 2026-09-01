@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import * as messages from "./messages.ts";
+import { createCommands } from "./index.ts";
 
 const events = [
   {
@@ -51,8 +51,10 @@ test("message command mirrors the Ethos SSE endpoint", async (context) => {
   });
 
   const received = [];
+  const messages = createCommands({
+    endpoint: "http://localhost:8000",
+  }).messages;
   for await (const event of messages.send(
-    { endpoint: "http://localhost:8000" },
     "my workspace",
     "session/id",
     "Say hello",
@@ -84,10 +86,10 @@ test("approval commands mirror the Ethos SSE endpoints", async (context) => {
   });
 
   const connection = { endpoint: "http://localhost:8000" };
+  const messages = createCommands(connection).messages;
   const received = [];
 
   for await (const event of messages.approve(
-    connection,
     "my workspace",
     "session/id",
     "approval/id",
@@ -95,7 +97,6 @@ test("approval commands mirror the Ethos SSE endpoints", async (context) => {
     received.push(event);
   }
   for await (const event of messages.deny(
-    connection,
     "my workspace",
     "session/id",
     "approval/id",
