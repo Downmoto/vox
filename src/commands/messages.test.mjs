@@ -69,3 +69,52 @@ test("message command mirrors the Ethos SSE endpoint", async (context) => {
   assert.deepEqual(await request.json(), { prompt: "Say hello" });
   assert.deepEqual(received, events);
 });
+
+test("approval commands mirror the Ethos SSE endpoints", async (context) => {
+  const originalFetch = globalThis.fetch;
+  const requests = [];
+  globalThis.fetch = async (input, init) => {
+    requests.push(new Request(input, init));
+    return new Response(`data: ${JSON.stringify(events[0])}\n\n`, {
+      headers: { "Content-Type": "text/event-stream" },
+    });
+  };
+  context.after(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  const connection = { endpoint: "http://localhost:8000" };
+  const received = [];
+
+  for await (const event of messages.approve(
+    connection,
+    "my workspace",
+    "session/id",
+    "approval/id",
+  )) {
+    received.push(event);
+  }
+  for await (const event of messages.deny(
+    connection,
+    "my workspace",
+    "session/id",
+    "approval/id",
+  )) {
+    received.push(event);
+  }
+
+  assert.deepEqual(
+    requests.map(({ method, url }) => [method, url]),
+    [
+      [
+        "POST",
+        "http://localhost:8000/workspaces/my%20workspace/sessions/session%2Fid/approvals/approval%2Fid/approve",
+      ],
+      [
+        "POST",
+        "http://localhost:8000/workspaces/my%20workspace/sessions/session%2Fid/approvals/approval%2Fid/deny",
+      ],
+    ],
+  );
+  assert.deepEqual(received, [events[0], events[0]]);
+});

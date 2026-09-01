@@ -63,3 +63,47 @@ export function send(
     { method: "POST", body: { prompt } },
   );
 }
+
+function resolveApproval(
+  connection: Connection,
+  workspace: string,
+  sessionId: string,
+  approvalId: string,
+  decision: "approve" | "deny",
+) {
+  return stream<MessageEvent>(
+    connection,
+    `/workspaces/${encodeURIComponent(workspace)}/sessions/${encodeURIComponent(sessionId)}/approvals/${encodeURIComponent(approvalId)}/${decision}`,
+    { method: "POST" },
+  );
+}
+
+export function approve(
+  connection: Connection,
+  workspace: string,
+  sessionId: string,
+  approvalId: string,
+) {
+  return resolveApproval(
+    connection,
+    workspace,
+    sessionId,
+    approvalId,
+    "approve",
+  );
+}
+
+export function deny(
+  connection: Connection,
+  workspace: string,
+  sessionId: string,
+  approvalId: string,
+) {
+  return resolveApproval(
+    connection,
+    workspace,
+    sessionId,
+    approvalId,
+    "deny",
+  );
+}
