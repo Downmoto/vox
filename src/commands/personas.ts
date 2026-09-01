@@ -1,7 +1,6 @@
+import type { CapabilityName } from "./capabilities.ts";
 import type { ReasoningEffort } from "./provider.ts";
 import { type Connection, request } from "./request.ts";
-
-export type Capability = "skills" | "file_system" | "shell";
 
 export type Persona = {
   id: string;
@@ -13,8 +12,8 @@ export type Persona = {
   effective_model_name: string | null;
   reasoning_effort: ReasoningEffort | null;
   effective_reasoning_effort: ReasoningEffort | null;
-  capabilities: Capability[] | null;
-  effective_capabilities: Capability[];
+  capabilities: CapabilityName[] | null;
+  effective_capabilities: CapabilityName[];
 };
 
 export type PersonaAssignment = {
@@ -30,7 +29,7 @@ export type PersonaSettings = {
   enabled?: boolean;
   model_name?: string | null;
   reasoning_effort?: ReasoningEffort | null;
-  capabilities?: Capability[] | null;
+  capabilities?: CapabilityName[] | null;
 };
 
 export type CreatePersona = {
