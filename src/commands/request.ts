@@ -1,4 +1,4 @@
-/** Shared JSON transport for every non-streaming Ethos command. */
+/** Shared HTTP transport for Ethos commands. */
 
 /** Connection details supplied to commands instead of retained globally. */
 export type Connection = {
@@ -15,11 +15,11 @@ type ErrorResponse = {
   detail?: string;
 };
 
-export async function request<T>(
+async function send(
   connection: Connection,
   path: string,
   options: RequestOptions,
-): Promise<T> {
+): Promise<Response> {
   const base = `${connection.endpoint.replace(/\/+$/, "")}/`;
   const url = new URL(path.replace(/^\/+/, ""), base);
   const headers = new Headers();
@@ -51,6 +51,66 @@ export async function request<T>(
     throw new Error(`Ethos returned ${response.status}${detail}`);
   }
 
+  return response;
+}
+
+export async function request<T>(
+  connection: Connection,
+  path: string,
+  options: RequestOptions,
+): Promise<T> {
+  const response = await send(connection, path, options);
+
   // Resource modules own the wire types; this boundary trusts Ethos to honour them.
   return response.json() as Promise<T>;
+}
+
+function parseFrame<T>(frame: string): T | undefined {
+  const data = frame
+    .split(/\r?\n/)
+    .filter((line) => line.startsWith("data:"))
+    .map((line) => line.slice(5).trimStart())
+    .join("\n");
+  if (!data) return;
+  return JSON.parse(data) as T;
+}
+
+export async function* stream<T>(
+  connection: Connection,
+  path: string,
+  options: RequestOptions,
+): AsyncGenerator<T> {
+  const response = await send(connection, path, options);
+  if (!response.body) throw new Error("Ethos returned an empty stream");
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let complete = false;
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      buffer += decoder.decode(value, { stream: !done });
+      const frames = buffer.split(/\r?\n\r?\n/);
+      buffer = frames.pop() ?? "";
+
+      for (const frame of frames) {
+        const event = parseFrame<T>(frame);
+        if (event !== undefined) yield event;
+      }
+      if (done) {
+        complete = true;
+        break;
+      }
+    }
+
+    if (buffer.trim()) {
+      const event = parseFrame<T>(buffer);
+      if (event !== undefined) yield event;
+    }
+  } finally {
+    if (!complete) await reader.cancel();
+    reader.releaseLock();
+  }
 }
